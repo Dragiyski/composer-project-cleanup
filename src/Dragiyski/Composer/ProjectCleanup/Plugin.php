@@ -138,8 +138,8 @@ class Plugin implements PluginInterface, EventSubscriberInterface {
     }
 
     private function doCleanUp($basePath, $config) {
-        if (!empty($config['files'])) {
-            foreach ((array)$config['files'] as $path) {
+        if (!empty($config['file'])) {
+            foreach ((array)$config['file'] as $path) {
                 $path = @realpath($basePath . DIRECTORY_SEPARATOR . $path);
                 if (!$path || strpos($path, $basePath) !== 0) {
                     // We do not allow deleting files outside the package
