@@ -278,6 +278,10 @@ class Plugin implements PluginInterface, EventSubscriberInterface {
             }
         }
 
-        $notImplemented = true;
+        $rootPath = realpath(ComposerFactory::getComposerFile());
+        if ($rootPath === false) {
+            return null;
+        }
+        $this->doCleanUp($rootPath, $removeConfig);
     }
 }
