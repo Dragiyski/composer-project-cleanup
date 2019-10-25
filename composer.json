@@ -3,7 +3,8 @@
     "version": "0.0.1",
     "description": "Allows cleaning up files from the project after composer install/update.",
     "type": "composer-plugin",
-    "require":{
+    "require": {
+        "ext-json": "*",
         "composer-plugin-api": "^1.0"
     },
     "extra": {
