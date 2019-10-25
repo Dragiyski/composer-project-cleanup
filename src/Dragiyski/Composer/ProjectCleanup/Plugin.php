@@ -37,10 +37,10 @@ class Plugin implements PluginInterface, EventSubscriberInterface {
     public static function getSubscribedEvents() {
         return array(
             ScriptEvents::POST_INSTALL_CMD => array(
-                array('onNewCodeEvent', 1000)
+                array('onNewCodeEvent', -1000)
             ),
             ScriptEvents::POST_UPDATE_CMD => array(
-                array('onNewCodeEvent', 1000)
+                array('onNewCodeEvent', -1000)
             )
         );
     }
@@ -93,30 +93,30 @@ class Plugin implements PluginInterface, EventSubscriberInterface {
     private function getPatternMatcherForKey($key) {
         $key = explode('-', $key);
         $result = array();
-        if($key[0] === 'fnmatch') {
+        if ($key[0] === 'fnmatch') {
             $result[0] = 'fnmatch';
-        } elseif($key[0] === 'regexp') {
+        } elseif ($key[0] === 'regexp') {
             $result[0] = 'preg_match';
         }
-        if(!isset($key[1])) {
+        if (!isset($key[1])) {
             $result[1] = array($this, 'matchAlways');
-        } elseif($key[1] === 'file') {
+        } elseif ($key[1] === 'file') {
             $result[1] = array($this, 'matchIfFile');
-        } elseif($key[2] === 'directory') {
+        } elseif ($key[2] === 'directory') {
             $result[1] = array($this, 'matchIfDirectory');
         }
         return $result;
     }
 
     private function addForRemovalIfMatch(&$result, $relative, $pathName, $config, $key) {
-        if(!empty($config[$key])) {
+        if (!empty($config[$key])) {
             $fn = $this->getPatternMatcherForKey($key);
-            foreach((array)$config[$key] as $pattern) {
+            foreach ((array)$config[$key] as $pattern) {
                 $params = array($pattern, $relative);
-                if($fn[0] === 'fnmatch') {
+                if ($fn[0] === 'fnmatch') {
                     $params[] = FNM_PATHNAME | FNM_PERIOD;
                 }
-                if(call_user_func_array($fn[0], $params) && call_user_func($fn[1], $pathName)) {
+                if (call_user_func_array($fn[0], $params) && call_user_func($fn[1], $pathName)) {
                     $result[] = $pathName;
                     return true;
                 }
@@ -209,10 +209,10 @@ class Plugin implements PluginInterface, EventSubscriberInterface {
                 if (strpos($pathName, $basePath) !== 0) {
                     continue;
                 }
-                if(!$fileInfo->isDir() && !$fileInfo->isFile()) {
+                if (!$fileInfo->isDir() && !$fileInfo->isFile()) {
                     continue;
                 }
-                if(!$fileInfo->isWritable()) {
+                if (!$fileInfo->isWritable()) {
                     continue;
                 }
                 $relative = $pathName;
@@ -228,7 +228,7 @@ class Plugin implements PluginInterface, EventSubscriberInterface {
                 $this->addForRemovalIfMatch($pathToRemove, $relative, $pathName, $config, 'regexp-directory');
             }
             $pathToRemove = array_unique($pathToRemove);
-            foreach($pathToRemove as $path) {
+            foreach ($pathToRemove as $path) {
                 try {
                     $this->filesystem->remove($path);
                 } catch (\Exception $e) {
@@ -249,7 +249,7 @@ class Plugin implements PluginInterface, EventSubscriberInterface {
                 return;
             }
         }
-        if($package->getType() === 'metapackage') {
+        if ($package->getType() === 'metapackage') {
             return;
         }
         $basePath = @realpath($this->composer->getInstallationManager()->getInstallPath($package));
@@ -279,8 +279,12 @@ class Plugin implements PluginInterface, EventSubscriberInterface {
         }
 
         $rootPath = realpath(ComposerFactory::getComposerFile());
-        if ($rootPath === false) {
-            return null;
+        if (empty($rootPath)) {
+            return;
+        }
+        $rootPath = dirname($rootPath);
+        if (empty($rootPath)) {
+            return;
         }
         $this->doCleanUp($rootPath, $removeConfig);
     }
