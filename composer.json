@@ -7,7 +7,7 @@
         "composer-plugin-api": "^1.0"
     },
     "extra": {
-        "class": "Dragiyski\\ProjectCleanup\\Plugin"
+        "class": "Dragiyski\\Composer\\ProjectCleanup\\Plugin"
     },
     "autoload": {
         "psr-0": {
