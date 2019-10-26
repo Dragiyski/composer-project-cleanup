@@ -102,7 +102,7 @@ class Plugin implements PluginInterface, EventSubscriberInterface {
             $result[1] = array($this, 'matchAlways');
         } elseif ($key[1] === 'file') {
             $result[1] = array($this, 'matchIfFile');
-        } elseif ($key[2] === 'directory') {
+        } elseif ($key[1] === 'directory') {
             $result[1] = array($this, 'matchIfDirectory');
         }
         return $result;
@@ -240,17 +240,25 @@ class Plugin implements PluginInterface, EventSubscriberInterface {
     }
 
     private function cleanUpPackage(PackageInterface $package, $config) {
+        if ($package->getType() === 'metapackage') {
+            return;
+        }
         if (isset($config['exclude']) && is_array($config['exclude']) && in_array($package->getName(), $config['exclude'], true)) {
             return;
+        }
+        if (isset($config['extend'][$package->getName()])) {
+            $extend = $config['extend'][$package->getName()];
+            unset($config['extend'][$package->getName()]);
+            $config = array_merge_recursive($config, $extend);
+            if (!is_array($config)) {
+                return;
+            }
         }
         if (isset($config['override'][$package->getName()])) {
             $config = $config['override'][$package->getName()];
             if (!is_array($config)) {
                 return;
             }
-        }
-        if ($package->getType() === 'metapackage') {
-            return;
         }
         $basePath = @realpath($this->composer->getInstallationManager()->getInstallPath($package));
         if (!$basePath) {
